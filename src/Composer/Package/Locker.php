@@ -213,7 +213,7 @@ class Locker
             $requirements = $this->loader->parseLinks(
                 '__root__',
                 '1.0.0',
-                Link::TYPE_REQUIRE,
+                'requires',
                 isset($lockData['platform']) ? $lockData['platform'] : array()
             );
         }
@@ -222,7 +222,7 @@ class Locker
             $devRequirements = $this->loader->parseLinks(
                 '__root__',
                 '1.0.0',
-                Link::TYPE_REQUIRE,
+                'requires',
                 isset($lockData['platform-dev']) ? $lockData['platform-dev'] : array()
             );
 

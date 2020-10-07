@@ -548,9 +548,7 @@ class PlatformRepository extends ArrayRepository
         $ext->setDescription('The '.$name.' PHP extension'.$extraDescription);
 
         if ($name === 'uuid') {
-            $ext->setReplaces(array(
-                new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version), Link::TYPE_REPLACE, $ext->getPrettyVersion())
-            ));
+            $ext->setReplaces(array(new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version))));
         }
 
         $this->addPackage($ext);
@@ -587,8 +585,8 @@ class PlatformRepository extends ArrayRepository
         $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
         $lib->setDescription($description);
 
-        $links = function ($alias) use ($name, $version, $lib) {
-            return new Link('lib-'.$name, 'lib-'.$alias, new Constraint('=', $version), Link::TYPE_REPLACE, $lib->getPrettyVersion());
+        $links = function ($alias) use ($name, $version) {
+            return new Link('lib-'.$name, 'lib-'.$alias, new Constraint('=', $version));
         };
         $lib->setReplaces(array_map($links, $replaces));
         $lib->setProvides(array_map($links, $provides));

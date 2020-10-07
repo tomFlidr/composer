@@ -107,7 +107,8 @@ EOT
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             foreach ($localRepo->getPackages() as $package) {
                 $path = $composer->getInstallationManager()->getInstallPath($package);
-                $file = $path . '/composer.json';
+                $composerJsonFileName = \Composer\Factory::getComposerFile();
+                $file = $path . '/' . $composerJsonFileName;
                 if (is_dir($path) && file_exists($file)) {
                     list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll, $checkVersion);
 

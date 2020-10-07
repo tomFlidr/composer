@@ -44,7 +44,8 @@ class JsonConfigSourceTest extends TestCase
 
     public function testAddRepository()
     {
-        $config = $this->workingDir.'/composer.json';
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $config = $this->workingDir.'/'.$composerJsonFileName;
         copy($this->fixturePath('composer-repositories.json'), $config);
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
         $jsonConfigSource->addRepository('example_tld', array('type' => 'git', 'url' => 'example.tld'));
@@ -54,7 +55,8 @@ class JsonConfigSourceTest extends TestCase
 
     public function testAddRepositoryWithOptions()
     {
-        $config = $this->workingDir.'/composer.json';
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $config = $this->workingDir.'/'.$composerJsonFileName;
         copy($this->fixturePath('composer-repositories.json'), $config);
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
         $jsonConfigSource->addRepository('example_tld', array(
@@ -72,7 +74,8 @@ class JsonConfigSourceTest extends TestCase
 
     public function testRemoveRepository()
     {
-        $config = $this->workingDir.'/composer.json';
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $config = $this->workingDir.'/'.$composerJsonFileName;
         copy($this->fixturePath('config/config-with-exampletld-repository.json'), $config);
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
         $jsonConfigSource->removeRepository('example_tld');
@@ -82,7 +85,8 @@ class JsonConfigSourceTest extends TestCase
 
     public function testAddPackagistRepositoryWithFalseValue()
     {
-        $config = $this->workingDir.'/composer.json';
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $config = $this->workingDir.'/'.$composerJsonFileName;
         copy($this->fixturePath('composer-repositories.json'), $config);
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
         $jsonConfigSource->addRepository('packagist', false);
@@ -92,7 +96,8 @@ class JsonConfigSourceTest extends TestCase
 
     public function testRemovePackagist()
     {
-        $config = $this->workingDir.'/composer.json';
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $config = $this->workingDir.'/'.$composerJsonFileName;
         copy($this->fixturePath('config/config-with-packagist-false.json'), $config);
         $jsonConfigSource = new JsonConfigSource(new JsonFile($config));
         $jsonConfigSource->removeRepository('packagist');
@@ -113,7 +118,8 @@ class JsonConfigSourceTest extends TestCase
      */
     public function testAddLink($sourceFile, $type, $name, $value, $compareAgainst)
     {
-        $composerJson = $this->workingDir.'/composer.json';
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $composerJson = $this->workingDir.'/'.$composerJsonFileName;
         copy($sourceFile, $composerJson);
         $jsonConfigSource = new JsonConfigSource(new JsonFile($composerJson));
 
@@ -134,7 +140,8 @@ class JsonConfigSourceTest extends TestCase
      */
     public function testRemoveLink($sourceFile, $type, $name, $compareAgainst)
     {
-        $composerJson = $this->workingDir.'/composer.json';
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $composerJson = $this->workingDir.'/'.$composerJsonFileName;
         copy($sourceFile, $composerJson);
         $jsonConfigSource = new JsonConfigSource(new JsonFile($composerJson));
 

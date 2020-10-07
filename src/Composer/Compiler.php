@@ -63,7 +63,8 @@ class Compiler
             $this->version = trim($process->getOutput());
         } else {
             // get branch-alias defined in composer.json for dev-master (if any)
-            $localConfig = __DIR__.'/../../composer.json';
+			$composerJsonFileName = \Composer\Factory::getComposerFile();
+            $localConfig = __DIR__.'/../../' . $composerJsonFileName;
             $file = new JsonFile($localConfig);
             $localConfig = $file->read();
             if (isset($localConfig['extra']['branch-alias']['dev-master'])) {

@@ -91,7 +91,8 @@ class JsonFileTest extends TestCase
 
     public function testSchemaValidation()
     {
-        $json = new JsonFile(__DIR__.'/Fixtures/composer.json');
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $json = new JsonFile(__DIR__.'/Fixtures/'.$composerJsonFileName);
         $this->assertTrue($json->validateSchema());
     }
 
@@ -200,7 +201,8 @@ class JsonFileTest extends TestCase
 
     public function testDoubleEscapedUnicode()
     {
-        $jsonFile = new JsonFile('composer.json');
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $jsonFile = new JsonFile($composerJsonFileName);
         $data = array("Zdjęcia","hjkjhl\\u0119kkjk");
         $encodedData = $jsonFile->encode($data);
         $doubleEncodedData = $jsonFile->encode(array('t' => $encodedData));
@@ -222,7 +224,8 @@ class JsonFileTest extends TestCase
 
     private function assertJsonFormat($json, $data, $options = null)
     {
-        $file = new JsonFile('composer.json');
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $file = new JsonFile($composerJsonFileName);
 
         $json = str_replace("\r", '', $json);
         if (null === $options) {

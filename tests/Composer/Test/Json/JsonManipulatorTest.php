@@ -29,6 +29,7 @@ class JsonManipulatorTest extends TestCase
 
     public function linkProvider()
     {
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
         return array(
             array(
                 '{}',
@@ -743,7 +744,7 @@ class JsonManipulatorTest extends TestCase
                 },
                 {
                     "type": "metapackage",
-                    "name": "composer.json/composer.lock",
+                    "name": "'.$composerJsonFileName.'/composer.lock",
                     "version": "dev-597511d6d51b96e4a8afeba2c79982e5",
                     "require": {
                         "heroku-sys/php": "~5.6.0",
@@ -759,7 +760,7 @@ class JsonManipulatorTest extends TestCase
         }
     ],
     "require": {
-        "composer.json/composer.lock": "dev-597511d6d51b96e4a8afeba2c79982e5",
+        "'.$composerJsonFileName.'/composer.lock": "dev-597511d6d51b96e4a8afeba2c79982e5",
         "anthonymartin/geo-location": "v1.0.0",
         "aws/aws-sdk-php": "3.9.4",
         "cloudinary/cloudinary_php": "dev-master",
@@ -1224,7 +1225,7 @@ class JsonManipulatorTest extends TestCase
                 },
                 {
                     "type": "metapackage",
-                    "name": "composer.json/composer.lock",
+                    "name": "'.$composerJsonFileName.'/composer.lock",
                     "version": "dev-597511d6d51b96e4a8afeba2c79982e5",
                     "require": {
                         "heroku-sys/php": "~5.6.0",
@@ -1240,7 +1241,7 @@ class JsonManipulatorTest extends TestCase
         }
     ],
     "require": {
-        "composer.json/composer.lock": "dev-597511d6d51b96e4a8afeba2c79982e5",
+        "'.$composerJsonFileName.'/composer.lock": "dev-597511d6d51b96e4a8afeba2c79982e5",
         "anthonymartin/geo-location": "v1.0.0",
         "aws/aws-sdk-php": "3.9.4",
         "cloudinary/cloudinary_php": "dev-master",

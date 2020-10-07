@@ -42,8 +42,9 @@ class Tar
      */
     private static function extractComposerJsonFromFolder(\PharData $phar)
     {
-        if (isset($phar['composer.json'])) {
-            return $phar['composer.json']->getContent();
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        if (isset($phar[$composerJsonFileName])) {
+            return $phar[$composerJsonFileName]->getContent();
         }
 
         $topLevelPaths = array();
@@ -58,7 +59,7 @@ class Tar
             }
         }
 
-        $composerJsonPath = key($topLevelPaths).'/composer.json';
+        $composerJsonPath = key($topLevelPaths).'/'.$composerJsonFileName;
         if ($topLevelPaths && isset($phar[$composerJsonPath])) {
             return $phar[$composerJsonPath]->getContent();
         }

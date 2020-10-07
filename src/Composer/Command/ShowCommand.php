@@ -17,7 +17,6 @@ use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
-use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
@@ -234,14 +233,15 @@ EOT
 
                 if (empty($package)) {
                     $options = $input->getOptions();
-                    if (!isset($options['working-dir']) || !file_exists('composer.json')) {
+                    $composerJsonFileName = \Composer\Factory::getComposerFile();
+                    if (!isset($options['working-dir']) || !file_exists($composerJsonFileName)) {
                         if (PlatformRepository::isPlatformPackage($input->getArgument('package')) && !$input->getOption('platform')) {
                             throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found, try using --platform (-p) to show platform packages.');
                         }
                         throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found');
                     }
 
-                    $io->writeError('Package ' . $packageFilter . ' not found in ' . $options['working-dir'] . '/composer.json');
+                    $io->writeError('Package ' . $packageFilter . ' not found in ' . $options['working-dir'] . '/' . $composerJsonFileName);
 
                     return 1;
                 }
@@ -614,8 +614,8 @@ EOT
         $io = $this->getIO();
 
         $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null);
-        $this->printLinks($package, Link::TYPE_REQUIRE);
-        $this->printLinks($package, Link::TYPE_DEV_REQUIRE, 'requires (dev)');
+        $this->printLinks($package, 'requires');
+        $this->printLinks($package, 'devRequires', 'requires (dev)');
 
         if ($package->getSuggests()) {
             $io->write("\n<info>suggests</info>");
@@ -624,9 +624,9 @@ EOT
             }
         }
 
-        $this->printLinks($package, Link::TYPE_PROVIDE);
-        $this->printLinks($package, Link::TYPE_CONFLICT);
-        $this->printLinks($package, Link::TYPE_REPLACE);
+        $this->printLinks($package, 'provides');
+        $this->printLinks($package, 'conflicts');
+        $this->printLinks($package, 'replaces');
     }
 
     /**
@@ -912,7 +912,7 @@ EOT
 
     private function appendLinks($json, CompletePackageInterface $package)
     {
-        foreach (Link::$TYPES as $linkType) {
+        foreach (array('requires', 'devRequires', 'provides', 'conflicts', 'replaces') as $linkType) {
             $json = $this->appendLink($json, $package, $linkType);
         }
 

@@ -157,7 +157,8 @@ class ArchiveManager
             }
 
             // Check exclude from downloaded composer.json
-            if (file_exists($composerJsonPath = $sourcePath.'/composer.json')) {
+            $composerJsonFileName = \Composer\Factory::getComposerFile();
+            if (file_exists($composerJsonPath = $sourcePath.'/'.$composerJsonFileName)) {
                 $jsonFile = new JsonFile($composerJsonPath);
                 $jsonData = $jsonFile->read();
                 if (!empty($jsonData['archive']['name'])) {

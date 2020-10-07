@@ -264,6 +264,14 @@ class Factory
     }
 
     /**
+     * @deprecated Use Composer\Repository\RepositoryFactory::defaultRepos instead
+     */
+    public static function createDefaultRepositories(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
+    {
+        return RepositoryFactory::defaultRepos($io, $config, $rm);
+    }
+
+    /**
      * Creates a Composer instance
      *
      * @param  IOInterface               $io             IO instance
@@ -290,7 +298,8 @@ class Factory
             $file = new JsonFile($localConfig, null, $io);
 
             if (!$file->exists()) {
-                if ($localConfig === './composer.json' || $localConfig === 'composer.json') {
+                $composerJsonFileName = \Composer\Factory::getComposerFile();
+                if ($localConfig === './'.$composerJsonFileName || $localConfig === $composerJsonFileName) {
                     $message = 'Composer could not find a composer.json file in '.$cwd;
                 } else {
                     $message = 'Composer could not find the config file: '.$localConfig;
@@ -450,7 +459,8 @@ class Factory
     {
         $composer = null;
         try {
-            $composer = $this->createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), $fullLoad);
+            $composerJsonFileName = \Composer\Factory::getComposerFile();
+            $composer = $this->createComposer($io, $config->get('home') . '/' . $composerJsonFileName, $disablePlugins, $config->get('home'), $fullLoad);
         } catch (\Exception $e) {
             $io->writeError('Failed to initialize global composer: '.$e->getMessage(), true, IOInterface::DEBUG);
         }
