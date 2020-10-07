@@ -104,12 +104,13 @@ class GitBitbucketDriverTest extends TestCase
     {
         $driver = $this->getDriver(array('url' => 'https://bitbucket.org/user/repo.git'));
 
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
         $urls = array(
             'https://api.bitbucket.org/2.0/repositories/user/repo?fields=-project%2C-owner',
             'https://api.bitbucket.org/2.0/repositories/user/repo?fields=mainbranch',
             'https://api.bitbucket.org/2.0/repositories/user/repo/refs/tags?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cnext&sort=-target.date',
             'https://api.bitbucket.org/2.0/repositories/user/repo/refs/branches?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cvalues.heads%2Cnext&sort=-target.date',
-            'https://api.bitbucket.org/2.0/repositories/user/repo/src/master/composer.json',
+            'https://api.bitbucket.org/2.0/repositories/user/repo/src/master/'.$composerJsonFileName,
             'https://api.bitbucket.org/2.0/repositories/user/repo/commit/master?fields=date',
         );
         $this->httpDownloader->expects($this->any())

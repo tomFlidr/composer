@@ -398,7 +398,8 @@ class Perforce
 
     public function getComposerInformation($identifier)
     {
-        $composerFileContent = $this->getFileContent('composer.json', $identifier);
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $composerFileContent = $this->getFileContent($composerJsonFileName, $identifier);
 
         if (!$composerFileContent) {
             return;

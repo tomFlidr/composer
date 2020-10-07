@@ -41,7 +41,8 @@ class Zip
             return null;
         }
 
-        $foundFileIndex = self::locateFile($zip, 'composer.json');
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $foundFileIndex = self::locateFile($zip, $composerJsonFileName);
         if (false === $foundFileIndex) {
             $zip->close();
 

@@ -188,7 +188,8 @@ EOT
                 $repoConfig = RepositoryFactory::configFromString($io, $composer->getConfig(), $repo, true);
                 $composerJsonRepositoriesConfig = $composer->getConfig()->getRepositories();
                 $name = RepositoryFactory::generateRepositoryName($index, $repoConfig, $composerJsonRepositoriesConfig);
-                $configSource = new JsonConfigSource(new JsonFile('composer.json'));
+                $composerJsonFileName = \Composer\Factory::getComposerFile();
+                $configSource = new JsonConfigSource(new JsonFile($composerJsonFileName));
 
                 if (
                     (isset($repoConfig['packagist']) && $repoConfig === array('packagist' => false))
@@ -278,7 +279,8 @@ EOT
         // rewriting self.version dependencies with explicit version numbers if the package's vcs metadata is gone
         if (!$hasVcs) {
             $package = $composer->getPackage();
-            $configSource = new JsonConfigSource(new JsonFile('composer.json'));
+            $composerJsonFileName = \Composer\Factory::getComposerFile();
+            $configSource = new JsonConfigSource(new JsonFile($composerJsonFileName));
             foreach (BasePackage::$supportedLinkTypes as $type => $meta) {
                 foreach ($package->{'get'.$meta['method']}() as $link) {
                     if ($link->getPrettyConstraint() === 'self.version') {

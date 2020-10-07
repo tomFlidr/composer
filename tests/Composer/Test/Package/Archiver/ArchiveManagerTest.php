@@ -145,13 +145,15 @@ class ArchiveManagerTest extends ArchiverTest
             throw new \RuntimeException('Could not config: '.$this->process->getErrorOutput());
         }
 
-        $result = file_put_contents('composer.json', '{"name":"faker/faker", "description": "description", "license": "MIT"}');
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $result = file_put_contents($composerJsonFileName, '{"name":"faker/faker", "description": "description", "license": "MIT"}');
         if (false === $result) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not save file.');
         }
 
-        $result = $this->process->execute('git add composer.json && git commit -m "commit composer.json" -q', $output, $this->testDir);
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $result = $this->process->execute('git add '.$composerJsonFileName.' && git commit -m "commit composer.json" -q', $output, $this->testDir);
         if ($result > 0) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not commit: '.$this->process->getErrorOutput());

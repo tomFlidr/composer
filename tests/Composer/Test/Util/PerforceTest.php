@@ -459,7 +459,8 @@ class PerforceTest extends TestCase
 
     public function testGetComposerInformationWithoutLabelWithoutStream()
     {
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port  print '.ProcessExecutor::escape('//depot/composer.json');
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port  print '.ProcessExecutor::escape('//depot/'.$composerJsonFileName);
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
@@ -485,21 +486,22 @@ class PerforceTest extends TestCase
 
     public function testGetComposerInformationWithLabelWithoutStream()
     {
-        $expectedCommand = 'p4 -u user -p port  files '.ProcessExecutor::escape('//depot/composer.json@0.0.1');
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $expectedCommand = 'p4 -u user -p port  files '.ProcessExecutor::escape('//depot/'.$composerJsonFileName.'@0.0.1');
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
             ->will(
                 $this->returnCallback(
-                    function ($command, &$output) {
-                        $output = '//depot/composer.json#1 - branch change 10001 (text)';
+                    function ($command, &$output) use ($composerJsonFileName) {
+                        $output = '//depot/'.$composerJsonFileName.'#1 - branch change 10001 (text)';
 
                         return true;
                     }
                 )
             );
 
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port  print '.ProcessExecutor::escape('//depot/composer.json@10001');
+        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port  print '.ProcessExecutor::escape('//depot/'.$composerJsonFileName.'@10001');
         $this->processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
@@ -528,7 +530,8 @@ class PerforceTest extends TestCase
     {
         $this->setPerforceToStream();
 
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port  print '.ProcessExecutor::escape('//depot/branch/composer.json');
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port  print '.ProcessExecutor::escape('//depot/branch/'.$composerJsonFileName);
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
@@ -556,21 +559,22 @@ class PerforceTest extends TestCase
     public function testGetComposerInformationWithLabelWithStream()
     {
         $this->setPerforceToStream();
-        $expectedCommand = 'p4 -u user -p port  files '.ProcessExecutor::escape('//depot/branch/composer.json@0.0.1');
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $expectedCommand = 'p4 -u user -p port  files '.ProcessExecutor::escape('//depot/branch/'.$composerJsonFileName.'@0.0.1');
         $this->processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
             ->will(
                 $this->returnCallback(
-                    function ($command, &$output) {
-                        $output = '//depot/composer.json#1 - branch change 10001 (text)';
+                    function ($command, &$output) use ($composerJsonFileName) {
+                        $output = '//depot/'.$composerJsonFileName.'#1 - branch change 10001 (text)';
 
                         return true;
                     }
                 )
             );
 
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port  print '.ProcessExecutor::escape('//depot/branch/composer.json@10001');
+        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port  print '.ProcessExecutor::escape('//depot/branch/'.$composerJsonFileName.'@10001');
         $this->processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedCommand))

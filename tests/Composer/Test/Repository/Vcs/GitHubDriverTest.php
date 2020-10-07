@@ -181,9 +181,10 @@ class GitHubDriverTest extends TestCase
             ->with($this->equalTo($url = $repoApiUrl))
             ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"master_branch": "test_master", "owner": {"login": "composer"}, "name": "packagist"}')));
 
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
         $httpDownloader->expects($this->at(1))
             ->method('get')
-            ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/contents/composer.json?ref=feature%2F3.2-foo'))
+            ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/contents/'.$composerJsonFileName.'?ref=feature%2F3.2-foo'))
             ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"encoding":"base64","content":"'.base64_encode('{"support": {"source": "'.$repoUrl.'" }}').'"}')));
 
         $httpDownloader->expects($this->at(2))
@@ -232,7 +233,8 @@ class GitHubDriverTest extends TestCase
         $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
         $identifier = 'v0.0.0';
         $sha = 'SOMESHA';
-        $composerJsonUrl = 'https://api.github.com/repos/composer/packagist/contents/composer.json?ref=' . $sha;
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $composerJsonUrl = 'https://api.github.com/repos/composer/packagist/contents/'.$composerJsonFileName.'?ref=' . $sha;
 
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io->expects($this->any())

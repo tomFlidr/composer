@@ -107,13 +107,14 @@ abstract class VcsDriver implements VcsDriverInterface
 
     protected function getBaseComposerInformation($identifier)
     {
-        $composerFileContent = $this->getFileContent('composer.json', $identifier);
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $composerFileContent = $this->getFileContent($composerJsonFileName, $identifier);
 
         if (!$composerFileContent) {
             return null;
         }
 
-        $composer = JsonFile::parseJson($composerFileContent, $identifier . ':composer.json');
+        $composer = JsonFile::parseJson($composerFileContent, $identifier . ':' . $composerJsonFileName);
 
         if (empty($composer['time']) && $changeDate = $this->getChangeDate($identifier)) {
             $composer['time'] = $changeDate->format(DATE_RFC3339);

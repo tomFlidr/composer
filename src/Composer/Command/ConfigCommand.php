@@ -168,8 +168,9 @@ EOT
             : ($input->getOption('file') ?: Factory::getComposerFile());
 
         // Create global composer.json if this was invoked using `composer global config`
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
         if (
-            ($configFile === 'composer.json' || $configFile === './composer.json')
+            ($configFile === $composerJsonFileName || $configFile === './'.$composerJsonFileName)
             && !file_exists($configFile)
             && realpath(getcwd()) === realpath($this->config->get('home'))
         ) {

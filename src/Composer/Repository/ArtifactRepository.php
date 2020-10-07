@@ -114,7 +114,8 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
             return false;
         }
 
-        $package = JsonFile::parseJson($json, $file->getPathname().'#composer.json');
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        $package = JsonFile::parseJson($json, $file->getPathname().'#'.$composerJsonFileName);
         $package['dist'] = array(
             'type' => $fileType,
             'url' => strtr($file->getPathname(), '\\', '/'),

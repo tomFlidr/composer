@@ -73,8 +73,9 @@ class VcsRepositoryTest extends TestCase
 
         // add composed tag & master branch
         $composer = array('name' => 'a/b');
-        file_put_contents('composer.json', json_encode($composer));
-        $exec('git add composer.json');
+        $composerJsonFileName = \Composer\Factory::getComposerFile();
+        file_put_contents($composerJsonFileName, json_encode($composer));
+        $exec('git add '.$composerJsonFileName);
         $exec('git commit -m addcomposer');
         $exec('git tag 0.6.0');
 
@@ -87,8 +88,8 @@ class VcsRepositoryTest extends TestCase
         // add version to composer.json
         $exec('git checkout master');
         $composer['version'] = '1.0.0';
-        file_put_contents('composer.json', json_encode($composer));
-        $exec('git add composer.json');
+        file_put_contents($composerJsonFileName, json_encode($composer));
+        $exec('git add '.$composerJsonFileName);
         $exec('git commit -m addversion');
 
         // create tag with wrong version in it
@@ -111,8 +112,8 @@ class VcsRepositoryTest extends TestCase
 
         // update master to 2.0
         $composer['version'] = '2.0.0';
-        file_put_contents('composer.json', json_encode($composer));
-        $exec('git add composer.json');
+        file_put_contents($composerJsonFileName, json_encode($composer));
+        $exec('git add '.$composerJsonFileName);
         $exec('git commit -m bump-version');
 
         chdir($oldCwd);
