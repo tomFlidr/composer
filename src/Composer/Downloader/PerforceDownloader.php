@@ -29,7 +29,6 @@ class PerforceDownloader extends VcsDownloader
      */
     protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
     {
-
     }
 
     /**
@@ -94,7 +93,7 @@ class PerforceDownloader extends VcsDownloader
      */
     public function getLocalChanges(PackageInterface $package, $path)
     {
-        $this->io->writeError('Perforce driver does not check for local changes before overriding', true);
+        $this->io->writeError('Perforce driver does not check for local changes before overriding');
     }
 
     /**

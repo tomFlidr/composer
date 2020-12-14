@@ -95,7 +95,7 @@ class GitLabDriver extends VcsDriver
             ? $match['scheme']
             : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https')
         ;
-        $this->originUrl = $this->determineOrigin($configuredDomains, $guessedDomain, $urlParts, $match['port']);
+        $this->originUrl = self::determineOrigin($configuredDomains, $guessedDomain, $urlParts, $match['port']);
 
         if (false !== strpos($this->originUrl, ':') || false !== strpos($this->originUrl, '/')) {
             $this->hasNonstandardOrigin = true;
@@ -132,7 +132,7 @@ class GitLabDriver extends VcsDriver
 
         if (!isset($this->infoCache[$identifier])) {
             if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
-                $composer =  JsonFile::parseJson($res);
+                $composer = JsonFile::parseJson($res);
             } else {
                 $composer = $this->getBaseComposerInformation($identifier);
 
@@ -563,6 +563,7 @@ class GitLabDriver extends VcsDriver
             if ($portNumber) {
                 return $guessedDomain.':'.$portNumber;
             }
+
             return $guessedDomain;
         }
 

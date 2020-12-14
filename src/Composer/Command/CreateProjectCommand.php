@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
-use Composer\Installer\InstallationManager;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
@@ -39,9 +38,7 @@ use Composer\Json\JsonFile;
 use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Loop;
 use Composer\Package\Version\VersionParser;
-use Composer\EventDispatcher\EventDispatcher;
 
 /**
  * Install a package as new project into new directory.
@@ -199,7 +196,7 @@ EOT
                 ) {
                     $configSource->addRepository('packagist.org', false);
                 } else {
-                    $configSource->addRepository($name, $repoConfig);
+                    $configSource->addRepository($name, $repoConfig, false);
                 }
 
                 $composer = Factory::create($io, null, $disablePlugins);
@@ -254,7 +251,7 @@ EOT
             && (
                 $input->getOption('remove-vcs')
                 || !$io->isInteractive()
-                || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
+                || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ')
             )
         ) {
             $finder = new Finder();
@@ -339,7 +336,8 @@ EOT
         if (file_exists($directory)) {
             if (!is_dir($directory)) {
                 throw new \InvalidArgumentException('Cannot create project directory at "'.$directory.'", it exists as a file.');
-            } elseif (!$fs->isDirEmpty($directory)) {
+            }
+            if (!$fs->isDirEmpty($directory)) {
                 throw new \InvalidArgumentException('Project directory "'.$directory.'" is not empty.');
             }
         }
@@ -414,7 +412,7 @@ EOT
                     $fs = new Filesystem();
                     $fs->removeDirectory($realDir);
                     exit(130);
-                }, true);
+                });
             }
         }
 

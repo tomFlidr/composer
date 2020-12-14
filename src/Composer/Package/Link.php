@@ -30,7 +30,7 @@ class Link
     /**
      * Will be converted into a constant once the min PHP version allows this
      *
-     * @private
+     * @internal
      * @var string[]
      */
     public static $TYPES = array(
@@ -70,12 +70,12 @@ class Link
     /**
      * Creates a new package link.
      *
-     * @param string               $source
-     * @param string               $target
-     * @param ConstraintInterface  $constraint       Constraint applying to the target of this link
-     * @param string               $description      Used to create a descriptive string representation
+     * @param string              $source
+     * @param string              $target
+     * @param ConstraintInterface $constraint  Constraint applying to the target of this link
+     * @param string              $description Used to create a descriptive string representation
      * @phpstan-param self::TYPE_* $description
-     * @param string|null          $prettyConstraint
+     * @param string|null $prettyConstraint
      */
     public function __construct(
         $source,

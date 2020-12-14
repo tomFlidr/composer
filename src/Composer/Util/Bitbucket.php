@@ -40,11 +40,11 @@ class Bitbucket
     /**
      * Constructor.
      *
-     * @param IOInterface      $io               The IO instance
-     * @param Config           $config           The composer configuration
-     * @param ProcessExecutor  $process          Process instance, injectable for mocking
-     * @param HttpDownloader $httpDownloader Remote Filesystem, injectable for mocking
-     * @param int              $time             Timestamp, injectable for mocking
+     * @param IOInterface     $io             The IO instance
+     * @param Config          $config         The composer configuration
+     * @param ProcessExecutor $process        Process instance, injectable for mocking
+     * @param HttpDownloader  $httpDownloader Remote Filesystem, injectable for mocking
+     * @param int             $time           Timestamp, injectable for mocking
      */
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null, $time = null)
     {
@@ -90,10 +90,9 @@ class Bitbucket
     }
 
     /**
-     * @param  string $originUrl
      * @return bool
      */
-    private function requestAccessToken($originUrl)
+    private function requestAccessToken()
     {
         try {
             $response = $this->httpDownloader->get(self::OAUTH2_ACCESS_TOKEN_URL, array(
@@ -113,7 +112,8 @@ class Bitbucket
                 $this->io->writeError('2. You are using an OAuth consumer, but didn\'t configure a (dummy) callback url');
 
                 return false;
-            } elseif (in_array($e->getCode(), array(403, 401))) {
+            }
+            if (in_array($e->getCode(), array(403, 401))) {
                 $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
                 $this->io->writeError('You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
 
@@ -141,7 +141,7 @@ class Bitbucket
             $this->io->writeError($message);
         }
 
-        $url = 'https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html';
+        $url = 'https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/';
         $this->io->writeError(sprintf('Follow the instructions on %s', $url));
         $this->io->writeError(sprintf('to create a consumer. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
         $this->io->writeError('Ensure you enter a "Callback URL" (http://example.com is fine) or it will not be possible to create an Access Token (this callback url will not be used by composer)');
@@ -166,7 +166,7 @@ class Bitbucket
 
         $this->io->setAuthentication($originUrl, $consumerKey, $consumerSecret);
 
-        if (!$this->requestAccessToken($originUrl)) {
+        if (!$this->requestAccessToken()) {
             return false;
         }
 
@@ -196,7 +196,7 @@ class Bitbucket
         }
 
         $this->io->setAuthentication($originUrl, $consumerKey, $consumerSecret);
-        if (!$this->requestAccessToken($originUrl)) {
+        if (!$this->requestAccessToken()) {
             return '';
         }
 
@@ -235,8 +235,7 @@ class Bitbucket
         $authConfig = $this->config->get('bitbucket-oauth');
 
         if (
-            !isset($authConfig[$originUrl]['access-token'])
-            || !isset($authConfig[$originUrl]['access-token-expiration'])
+            !isset($authConfig[$originUrl]['access-token'], $authConfig[$originUrl]['access-token-expiration'])
             || time() > $authConfig[$originUrl]['access-token-expiration']
         ) {
             return false;

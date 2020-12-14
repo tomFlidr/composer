@@ -15,10 +15,9 @@ namespace Composer\Repository;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Package\AliasPackage;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\Link;
-
 
 /**
  * Installed repository is a composite of all installed repo types.
@@ -176,7 +175,7 @@ class InstalledRepository extends CompositeRepository
 
                         $platformPkg = $this->findPackage($link->getTarget(), '*');
                         $description = $platformPkg ? 'but '.$platformPkg->getPrettyVersion().' is installed' : 'but it is missing';
-                        $results[] = array($package, new Link($package->getName(), $link->getTarget(), null, Link::TYPE_REQUIRE, $link->getPrettyConstraint().' '.$description), false);
+                        $results[] = array($package, new Link($package->getName(), $link->getTarget(), new MatchAllConstraint, Link::TYPE_REQUIRE, $link->getPrettyConstraint().' '.$description), false);
 
                         continue;
                     }
@@ -187,6 +186,16 @@ class InstalledRepository extends CompositeRepository
                         }
 
                         $version = new Constraint('=', $pkg->getVersion());
+
+                        if ($link->getTarget() !== $pkg->getName()) {
+                            foreach (array_merge($pkg->getReplaces(), $pkg->getProvides()) as $prov) {
+                                if ($link->getTarget() === $prov->getTarget()) {
+                                    $version = $prov->getConstraint();
+                                    break;
+                                }
+                            }
+                        }
+
                         if (!$link->getConstraint()->matches($version)) {
                             // if we have a root package (we should but can not guarantee..) we show
                             // the root requires as well to perhaps allow to find an issue there
@@ -198,8 +207,9 @@ class InstalledRepository extends CompositeRepository
                                         continue 3;
                                     }
                                 }
+
                                 $results[] = array($package, $link, false);
-                                $results[] = array($rootPackage, new Link($rootPackage->getName(), $link->getTarget(), null, 'does not require', 'but ' . $pkg->getPrettyVersion() . ' is installed'), false);
+                                $results[] = array($rootPackage, new Link($rootPackage->getName(), $link->getTarget(), new MatchAllConstraint, 'does not require', 'but ' . $pkg->getPrettyVersion() . ' is installed'), false);
                             } else {
                                 // no root so let's just print whatever we found
                                 $results[] = array($package, $link, false);
@@ -219,7 +229,9 @@ class InstalledRepository extends CompositeRepository
 
     public function getRepoName()
     {
-        return 'installed repo ('.implode(', ', array_map(function ($repo) { return $repo->getRepoName(); }, $this->getRepositories())).')';
+        return 'installed repo ('.implode(', ', array_map(function ($repo) {
+            return $repo->getRepoName();
+        }, $this->getRepositories())).')';
     }
 
     /**

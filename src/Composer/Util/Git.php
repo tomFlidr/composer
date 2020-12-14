@@ -79,6 +79,7 @@ class Git
                     return;
                 }
                 $messages[] = '- ' . $protoUrl . "\n" . preg_replace('#^#m', '  ', $this->process->getErrorOutput());
+
                 if ($initialClone && isset($origCwd)) {
                     $this->filesystem->removeDirectory($origCwd);
                 }
@@ -138,7 +139,7 @@ class Git
                     //We already have an access_token from a previous request.
                     if ($auth['username'] !== 'x-token-auth') {
                         $accessToken = $bitbucketUtil->requestToken($match[1], $auth['username'], $auth['password']);
-                        if (! empty($accessToken)) {
+                        if (!empty($accessToken)) {
                             $this->io->setAuthentication($match[1], 'x-token-auth', $accessToken);
                         }
                     }
@@ -260,7 +261,7 @@ class Git
                 $commandCallable = function ($url) {
                     $sanitizedUrl = preg_replace('{://([^@]+?):(.+?)@}', '://', $url);
 
-                    return sprintf('git remote set-url origin %s && git remote update --prune origin && git remote set-url origin %s', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
+                    return sprintf('git remote set-url origin %s && git remote update --prune origin && git remote set-url origin %s && git gc --auto', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
                 };
                 $this->runCommand($commandCallable, $url, $dir);
             } catch (\Exception $e) {
@@ -286,12 +287,12 @@ class Git
 
     public function fetchRefOrSyncMirror($url, $dir, $ref)
     {
-        if ($this->checkRefIsInMirror($url, $dir, $ref)) {
+        if ($this->checkRefIsInMirror($dir, $ref)) {
             return true;
         }
 
         if ($this->syncMirror($url, $dir)) {
-            return $this->checkRefIsInMirror($url, $dir, $ref);
+            return $this->checkRefIsInMirror($dir, $ref);
         }
 
         return false;
@@ -307,7 +308,7 @@ class Git
         return '';
     }
 
-    private function checkRefIsInMirror($url, $dir, $ref)
+    private function checkRefIsInMirror($dir, $ref)
     {
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             $escapedRef = ProcessExecutor::escape($ref.'^{commit}');

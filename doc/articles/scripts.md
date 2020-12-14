@@ -38,7 +38,8 @@ Composer fires the following named events during its execution process:
 - **post-autoload-dump**: occurs after the autoloader has been dumped, either
   during `install`/`update`, or via the `dump-autoload` command.
 - **post-root-package-install**: occurs after the root package has been
-  installed, during the `create-project` command.
+  installed during the `create-project` command (but before its
+  dependencies are installed).
 - **post-create-project-cmd**: occurs after the `create-project` command has
   been executed.
 
@@ -208,7 +209,7 @@ and can be retrieved as an array via `$event->getArguments()` by PHP handlers.
 If you add custom scripts that do not fit one of the predefined event name
 above, you can either run them with run-script or also run them as native
 Composer commands. For example the handler defined below is executable by
-simply running `composer test`:
+running `composer test`:
 
 ```json
 {
@@ -224,7 +225,7 @@ to the `phpunit` script.
 
 > **Note:** Before executing scripts, Composer's bin-dir is temporarily pushed
 > on top of the PATH environment variable so that binaries of dependencies
-> are easily accessible. In this example no matter if the `phpunit` binary is
+> are directly accessible. In this example no matter if the `phpunit` binary is
 > actually in `vendor/bin/phpunit` or `bin/phpunit` it will be found and executed.
 
 Although Composer is not intended to manage long-running processes and other

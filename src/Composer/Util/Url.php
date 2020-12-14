@@ -20,9 +20,9 @@ use Composer\Config;
 class Url
 {
     /**
-     * @param Config $config
-     * @param string $url
-     * @param string $ref
+     * @param  Config $config
+     * @param  string $url
+     * @param  string $ref
      * @return string the updated URL
      */
     public static function updateDistReference(Config $config, $url, $ref)
@@ -60,7 +60,7 @@ class Url
     }
 
     /**
-     * @param string $url
+     * @param  string $url
      * @return string
      */
     public static function getOrigin(Config $config, $url)
@@ -109,12 +109,12 @@ class Url
         // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
         $url = preg_replace('{([&?]access_token=)[^&]+}', '$1***', $url);
 
-        $url = preg_replace_callback('{://(?P<user>[^:/\s@]+):(?P<password>[^@\s/]+)@}i', function ($m) {
+        $url = preg_replace_callback('{(?P<prefix>://|^)(?P<user>[^:/\s@]+):(?P<password>[^@\s/]+)@}i', function ($m) {
             if (preg_match('{^[a-f0-9]{12,}$}', $m['user'])) {
-                return '://***:***@';
+                return $m['prefix'].'***:***@';
             }
 
-            return '://'.$m['user'].':***@';
+            return $m['prefix'].$m['user'].':***@';
         }, $url);
 
         return $url;

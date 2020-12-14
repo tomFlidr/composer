@@ -35,6 +35,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -47,6 +48,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -59,6 +61,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -71,6 +74,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -83,6 +87,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -95,6 +100,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -106,6 +112,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -118,23 +125,12 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/single-sub.zip');
 
         $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
-    }
-
-    public function testThrowsExceptionIfMultipleComposerInSubFoldersWereFound()
-    {
-        if (!extension_loaded('zip')) {
-            $this->markTestSkipped('The PHP zip extension is not loaded.');
-            return;
-        }
-
-        $this->setExpectedException('\RuntimeException', 'Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: foo3/,__MACOSX/');
-
-        Zip::getComposerJson(__DIR__.'/Fixtures/Zip/multiple_subfolders.zip');
     }
 }

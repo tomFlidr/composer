@@ -114,10 +114,13 @@ class ArrayLoader implements LoaderInterface
         }
 
         if (isset($config['bin'])) {
-            foreach ((array) $config['bin'] as $key => $bin) {
+            if (!\is_array($config['bin'])) {
+                $config['bin'] = array($config['bin']);
+            }
+            foreach ($config['bin'] as $key => $bin) {
                 $config['bin'][$key] = ltrim($bin, '/');
             }
-            $package->setBinaries((array) $config['bin']);
+            $package->setBinaries($config['bin']);
         }
 
         if (isset($config['installation-source'])) {
@@ -129,7 +132,7 @@ class ArrayLoader implements LoaderInterface
         }
 
         if (isset($config['source'])) {
-            if (!isset($config['source']['type']) || !isset($config['source']['url']) || !isset($config['source']['reference'])) {
+            if (!isset($config['source']['type'], $config['source']['url'], $config['source']['reference'])) {
                 throw new \UnexpectedValueException(sprintf(
                     "Package %s's source key should be specified as {\"type\": ..., \"url\": ..., \"reference\": ...},\n%s given.",
                     $config['name'],
@@ -145,8 +148,7 @@ class ArrayLoader implements LoaderInterface
         }
 
         if (isset($config['dist'])) {
-            if (!isset($config['dist']['type'])
-             || !isset($config['dist']['url'])) {
+            if (!isset($config['dist']['type'], $config['dist']['url'])) {
                 throw new \UnexpectedValueException(sprintf(
                     "Package %s's dist key should be specified as ".
                     "{\"type\": ..., \"url\": ..., \"reference\": ..., \"shasum\": ...},\n%s given.",
@@ -296,11 +298,11 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param         string       $source        source package name
-     * @param         string       $sourceVersion source package version (pretty version ideally)
-     * @param         string       $description   link description (e.g. requires, replaces, ..)
+     * @param string $source        source package name
+     * @param string $sourceVersion source package version (pretty version ideally)
+     * @param string $description   link description (e.g. requires, replaces, ..)
      * @phpstan-param Link::TYPE_* $description
-     * @param         array        $links         array of package name => constraint mappings
+     * @param  array  $links array of package name => constraint mappings
      * @return Link[]
      */
     public function parseLinks($source, $sourceVersion, $description, $links)
@@ -347,7 +349,11 @@ class ArrayLoader implements LoaderInterface
                 }
 
                 // normalize without -dev and ensure it's a numeric branch that is parseable
-                $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+                if ($targetBranch === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                    $validatedTargetBranch = VersionParser::DEFAULT_BRANCH_ALIAS;
+                } else {
+                    $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+                }
                 if ('-dev' !== substr($validatedTargetBranch, -4)) {
                     continue;
                 }

@@ -20,15 +20,12 @@ use Composer\Util\Http\Response;
 
 abstract class BitbucketDriver extends VcsDriver
 {
-    /** @var Cache */
-    protected $cache;
     protected $owner;
     protected $repository;
     protected $hasIssues;
     protected $rootIdentifier;
     protected $tags;
     protected $branches;
-    protected $infoCache = array();
     protected $branchesUrl = '';
     protected $tagsUrl = '';
     protected $homeUrl = '';
@@ -147,7 +144,7 @@ abstract class BitbucketDriver extends VcsDriver
                         $hash = $branches[$label];
                     }
 
-                    if (! isset($hash)) {
+                    if (!isset($hash)) {
                         $composer['support']['source'] = sprintf(
                             'https://%s/%s/%s/src',
                             $this->originUrl,

@@ -65,7 +65,7 @@ class Config
         'htaccess-protect' => true,
         'use-github-api' => true,
         'lock' => true,
-        'platform-check' => true,
+        'platform-check' => 'php-only',
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth
@@ -138,6 +138,8 @@ class Config
             foreach ($config['config'] as $key => $val) {
                 if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer')) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
+                } elseif (in_array($key, array('gitlab-domains', 'github-domains')) && isset($this->config[$key])) {
+                    $this->config[$key] = array_unique(array_merge($this->config[$key], $val));
                 } elseif ('preferred-install' === $key && isset($this->config[$key])) {
                     if (is_array($val) || is_array($this->config[$key])) {
                         if (is_string($val)) {
@@ -246,6 +248,7 @@ class Config
                 if (false === $val) {
                     $val = $this->config[$key];
                 }
+
                 return $val !== 'false' && (bool) $val;
 
             // booleans without env var support
@@ -253,6 +256,11 @@ class Config
             case 'secure-http':
             case 'use-github-api':
             case 'lock':
+                // special case for secure-http
+                if ($key === 'secure-http' && $this->get('disable-tls') === true) {
+                    return false;
+                }
+
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
 
             // ints without env var support
@@ -465,7 +473,8 @@ class Config
         if (in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
             if ($this->get('secure-http')) {
                 throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
-            } elseif ($io) {
+            }
+            if ($io) {
                 $host = parse_url($url, PHP_URL_HOST);
                 if (!isset($this->warnedHosts[$host])) {
                     $io->writeError("<warning>Warning: Accessing $host over $scheme which is an insecure protocol.</warning>");

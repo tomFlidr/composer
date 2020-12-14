@@ -86,7 +86,7 @@ class InstallerTest extends TestCase
         $lockJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
         $lockJsonMock->expects($this->any())
             ->method('read')
-            ->will($this->returnCallback(function() use (&$lockData) {
+            ->will($this->returnCallback(function () use (&$lockData) {
                 return json_decode($lockData, true);
             }));
         $lockJsonMock->expects($this->any())
@@ -133,6 +133,7 @@ class InstallerTest extends TestCase
         foreach ($packages as $package) {
             $comparable[] = $dumper->dump($package);
         }
+
         return $comparable;
     }
 
@@ -185,6 +186,15 @@ class InstallerTest extends TestCase
     }
 
     /**
+     * @group slow
+     * @dataProvider getSlowIntegrationTests
+     */
+    public function testSlowIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult)
+    {
+        return $this->testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult);
+    }
+
+    /**
      * @dataProvider getIntegrationTests
      */
     public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult)
@@ -220,11 +230,11 @@ class InstallerTest extends TestCase
         $repositoryManager->setLocalRepository(new InstalledFilesystemRepositoryMock($jsonMock));
 
         // emulate a writable lock file
-        $lockData = $lock ? json_encode($lock, JsonFile::JSON_PRETTY_PRINT): null;
+        $lockData = $lock ? json_encode($lock, JsonFile::JSON_PRETTY_PRINT) : null;
         $lockJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
         $lockJsonMock->expects($this->any())
             ->method('read')
-            ->will($this->returnCallback(function() use (&$lockData) {
+            ->will($this->returnCallback(function () use (&$lockData) {
                 return json_decode($lockData, true);
             }));
         $lockJsonMock->expects($this->any())
@@ -347,10 +357,7 @@ class InstallerTest extends TestCase
         $output = str_replace("\r", '', $io->getOutput());
         $this->assertEquals($expectResult, $result, $output . stream_get_contents($appOutput));
         if ($expectLock && isset($actualLock)) {
-            unset($actualLock['hash']);
-            unset($actualLock['content-hash']);
-            unset($actualLock['_readme']);
-            unset($actualLock['plugin-api-version']);
+            unset($actualLock['hash'], $actualLock['content-hash'], $actualLock['_readme'], $actualLock['plugin-api-version']);
             $this->assertEquals($expectLock, $actualLock);
         }
 
@@ -382,9 +389,19 @@ class InstallerTest extends TestCase
         }
     }
 
+    public function getSlowIntegrationTests()
+    {
+        return $this->loadIntegrationTests('installer-slow/');
+    }
+
     public function getIntegrationTests()
     {
-        $fixturesDir = realpath(__DIR__.'/Fixtures/installer/');
+        return $this->loadIntegrationTests('installer/');
+    }
+
+    public function loadIntegrationTests($path)
+    {
+        $fixturesDir = realpath(__DIR__.'/Fixtures/'.$path);
         $tests = array();
 
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($fixturesDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {

@@ -121,10 +121,10 @@ class EventDispatcher
     /**
      * Dispatch a installer event.
      *
-     * @param string              $eventName         The constant in InstallerEvents
-     * @param bool                $devMode           Whether or not we are in dev mode
-     * @param bool                $executeOperations True if operations will be executed, false in --dry-run
-     * @param Transaction         $transaction       The transaction contains the list of operations
+     * @param string      $eventName         The constant in InstallerEvents
+     * @param bool        $devMode           Whether or not we are in dev mode
+     * @param bool        $executeOperations True if operations will be executed, false in --dry-run
+     * @param Transaction $transaction       The transaction contains the list of operations
      *
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
@@ -144,13 +144,20 @@ class EventDispatcher
      */
     protected function doDispatch(Event $event)
     {
+        if (getenv('COMPOSER_DEBUG_EVENTS')) {
+            $details = null;
+            if ($event instanceof PackageEvent) {
+                $details = (string) $event->getOperation();
+            }
+            $this->io->writeError('Dispatching <info>'.$event->getName().'</info>'.($details ? ' ('.$details.')' : '').' event');
+        }
+
         $listeners = $this->getListeners($event);
 
         $this->pushEvent($event);
 
         $return = 0;
         foreach ($listeners as $callable) {
-
             $this->ensureBinDirIsInPath();
 
             if (!is_string($callable)) {
@@ -160,7 +167,7 @@ class EventDispatcher
                     throw new \RuntimeException('Subscriber '.$className.'::'.$callable[1].' for event '.$event->getName().' is not callable, make sure the function is defined and public');
                 }
                 if (is_array($callable) && (is_string($callable[0]) || is_object($callable[0])) && is_string($callable[1])) {
-                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1] ), true, IOInterface::VERBOSE);
+                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1]), true, IOInterface::VERBOSE);
                 }
                 $return = false === call_user_func($callable, $event) ? 1 : 0;
             } elseif ($this->isComposerScript($callable)) {
@@ -313,23 +320,6 @@ class EventDispatcher
         }
 
         return $className::$methodName($event);
-    }
-
-    private function serializeCallback($cb)
-    {
-        if (is_array($cb) && count($cb) === 2) {
-            if (is_object($cb[0])) {
-                $cb[0] = get_class($cb[0]);
-            }
-            if (is_string($cb[0]) && is_string($cb[1])) {
-                $cb = implode('::', $cb);
-            }
-        }
-        if (is_string($cb)) {
-            return $cb;
-        }
-
-        return var_export($cb, true);
     }
 
     /**

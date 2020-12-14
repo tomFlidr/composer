@@ -12,13 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\RootAliasPackage;
-use Composer\Package\RootPackageInterface;
-use Composer\Repository\ArrayRepository;
-use Composer\Repository\RepositoryInterface;
-use Composer\Test\Repository\ArrayRepositoryTest;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -50,7 +45,6 @@ class LockTransaction extends Transaction
 
         $this->setResultPackages($pool, $decisions);
         parent::__construct($this->presentMap, $this->resultPackages['all']);
-
     }
 
     // TODO make this a bit prettier instead of the two text indexes?
@@ -62,6 +56,7 @@ class LockTransaction extends Transaction
 
             if ($literal > 0) {
                 $package = $pool->literalToPackage($literal);
+
                 $this->resultPackages['all'][] = $package;
                 if (!isset($this->unlockableMap[$package->id])) {
                     $this->resultPackages['non-dev'][] = $package;
@@ -131,6 +126,10 @@ class LockTransaction extends Transaction
                 }
             }
         }
+
+        usort($usedAliases, function ($a, $b) {
+            return strcmp($a['package'], $b['package']);
+        });
 
         return $usedAliases;
     }

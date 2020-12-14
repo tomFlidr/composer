@@ -76,7 +76,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @private
      * @var array list of package names which are fresh and can be loaded from the cache directly in case loadPackage is called several times
-     *          useful for v2 metadata repositories with lazy providers
+     *            useful for v2 metadata repositories with lazy providers
      */
     public $freshMetadataUrls = array();
 
@@ -84,7 +84,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @private
      * @var array list of package names which returned a 404 and should not be re-fetched in case loadPackage is called several times
-     *          useful for v2 metadata repositories with lazy providers
+     *            useful for v2 metadata repositories with lazy providers
      */
     public $packagesNotFoundCache = array();
     /**
@@ -527,7 +527,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @param string $name package name
+     * @param  string      $name package name
      * @return array|mixed
      */
     private function whatProvides($name, array $acceptableStabilities = null, array $stabilityFlags = null, array $alreadyLoaded = array())
@@ -637,7 +637,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         // load acceptable packages in the providers
-        $loadedPackages = $this->createPackages($versionsToLoad, 'Composer\Package\CompletePackage');
+        $loadedPackages = $this->createPackages($versionsToLoad);
         $uids = array_keys($versionsToLoad);
 
         foreach ($loadedPackages as $index => $package) {
@@ -667,7 +667,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $repoData = $this->loadDataFromServer();
 
-        foreach ($this->createPackages($repoData, 'Composer\Package\CompletePackage') as $package) {
+        foreach ($this->createPackages($repoData) as $package) {
             $this->addPackage($package);
         }
     }
@@ -764,7 +764,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
 
-                    $loadedPackages = $repo->createPackages($versionsToLoad, 'Composer\Package\CompletePackage');
+                    $loadedPackages = $repo->createPackages($versionsToLoad);
                     foreach ($loadedPackages as $package) {
                         $package->setRepository($repo);
                         $packages[spl_object_hash($package)] = $package;
@@ -864,6 +864,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->hasProviders = true;
 
             $this->hasPartialPackages = !empty($data['packages']) && is_array($data['packages']);
+        }
+
+        // Horrible hack to workaround https://github.com/composer/composer/issues/9297 and bad mirrors, should be disabled if possible once they fix things
+        if (!empty($data['metadata-url']) && !empty($data['list']) && $data['metadata-url'] === '/p/%package%.json' && $data['list'] === 'https://packagist.org/packages/list.json') {
+            $this->io->writeError('<warning>Composer 2 repository support for '.$this->url.' has been disabled due to what seems like a misconfiguration. If this is a packagist.org mirror we recommend removing it as Composer 2 handles network operations much faster and should work fine without.</warning>');
+            unset($data['metadata-url']);
         }
 
         // metadata-url indicates V2 repo protocol so it takes over from all the V1 types
@@ -1238,19 +1244,21 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $io = $this->io;
         $url = $this->url;
         $cache = $this->cache;
-        $degradedMode =& $this->degradedMode;
+        $degradedMode = &$this->degradedMode;
         $repo = $this;
 
         $accept = function ($response) use ($io, $url, $filename, $cache, $cacheKey, $repo) {
             // package not found is acceptable for a v2 protocol repository
             if ($response->getStatusCode() === 404) {
                 $repo->packagesNotFoundCache[$filename] = true;
+
                 return array('packages' => array());
             }
 
             $json = $response->getBody();
             if ($json === '' && $response->getStatusCode() === 304) {
                 $repo->freshMetadataUrls[$filename] = true;
+
                 return true;
             }
 
@@ -1274,6 +1282,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $reject = function ($e) use (&$retries, $httpDownloader, $filename, $options, &$reject, $accept, $io, $url, &$degradedMode, $repo) {
             if ($e instanceof TransportException && $e->getStatusCode() === 404) {
                 $repo->packagesNotFoundCache[$filename] = true;
+
                 return false;
             }
 
@@ -1327,8 +1336,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * Checks if the package name is present in this lazy providers repo
      *
-     * @param string $name
-     * @return bool true if the package name is present in availablePackages or matched by availablePackagePatterns
+     * @param  string $name
+     * @return bool   true if the package name is present in availablePackages or matched by availablePackagePatterns
      */
     protected function lazyProvidersRepoContains($name)
     {

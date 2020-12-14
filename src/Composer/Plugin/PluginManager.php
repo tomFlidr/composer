@@ -17,6 +17,7 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
+use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledRepository;
@@ -82,10 +83,10 @@ class PluginManager
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
         if ($repo) {
-            $this->loadRepository($repo);
+            $this->loadRepository($repo, false);
         }
         if ($globalRepo) {
-            $this->loadRepository($globalRepo);
+            $this->loadRepository($globalRepo, true);
         }
     }
 
@@ -117,10 +118,11 @@ class PluginManager
      *
      * @param PackageInterface $package
      * @param bool             $failOnMissingClasses By default this silently skips plugins that can not be found, but if set to true it fails with an exception
+     * @param bool             $isGlobalPlugin       Set to true to denote plugins which are installed in the global Composer directory
      *
      * @throws \UnexpectedValueException
      */
-    public function registerPackage(PackageInterface $package, $failOnMissingClasses = false)
+    public function registerPackage(PackageInterface $package, $failOnMissingClasses = false, $isGlobalPlugin = false)
     {
         if ($this->disablePlugins) {
             return;
@@ -145,7 +147,13 @@ class PluginManager
             if ($requiresComposer->getPrettyString() === $this->getPluginApiVersion()) {
                 $this->io->writeError('<warning>The "' . $package->getName() . '" plugin requires composer-plugin-api '.$this->getPluginApiVersion().', this *WILL* break in the future and it should be fixed ASAP (require ^'.$this->getPluginApiVersion().' instead for example).</warning>');
             } elseif (!$requiresComposer->matches($currentPluginApiConstraint)) {
-                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
+                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin '.($isGlobalPlugin ? '(installed globally) ' : '').'was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
+
+                return;
+            }
+
+            if ($package->getName() === 'symfony/flex' && preg_match('{^[0-9.]+$}', $package->getVersion()) && version_compare($package->getVersion(), '1.9.8', '<')) {
+                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin '.($isGlobalPlugin ? '(installed globally) ' : '').'was skipped because it is not compatible with Composer 2+. Make sure to update it to version 1.9.8 or greater.</warning>');
 
                 return;
             }
@@ -181,7 +189,7 @@ class PluginManager
             $autoloads[] = array($autoloadPackage, $downloadPath);
         }
 
-        $map = $generator->parseAutoloads($autoloads, new Package('dummy', '1.0.0.0', '1.0.0'));
+        $map = $generator->parseAutoloads($autoloads, new RootPackage('dummy/root-package', '1.0.0.0', '1.0.0'));
         $classLoader = $generator->createLoader($map);
         $classLoader->register();
 
@@ -213,7 +221,7 @@ class PluginManager
                 $this->registeredPlugins[$package->getName()] = $installer;
             } elseif (class_exists($class)) {
                 $plugin = new $class();
-                $this->addPlugin($plugin);
+                $this->addPlugin($plugin, $isGlobalPlugin);
                 $this->registeredPlugins[$package->getName()] = $plugin;
             } elseif ($failOnMissingClasses) {
                 throw new \UnexpectedValueException('Plugin '.$package->getName().' could not be initialized, class not found: '.$class);
@@ -305,9 +313,9 @@ class PluginManager
      *
      * @param PluginInterface $plugin plugin instance
      */
-    public function addPlugin(PluginInterface $plugin)
+    public function addPlugin(PluginInterface $plugin, $isGlobalPlugin = false)
     {
-        $this->io->writeError('Loading plugin '.get_class($plugin), true, IOInterface::DEBUG);
+        $this->io->writeError('Loading plugin '.get_class($plugin).($isGlobalPlugin ? ' (installed globally)' : ''), true, IOInterface::DEBUG);
         $this->plugins[] = $plugin;
         $plugin->activate($this->composer, $this->io);
 
@@ -367,7 +375,7 @@ class PluginManager
      *
      * @throws \RuntimeException
      */
-    private function loadRepository(RepositoryInterface $repo)
+    private function loadRepository(RepositoryInterface $repo, $isGlobalRepo)
     {
         $packages = $repo->getPackages();
         $sortedPackages = PackageSorter::sortPackages($packages);
@@ -376,10 +384,10 @@ class PluginManager
                 continue;
             }
             if ('composer-plugin' === $package->getType()) {
-                $this->registerPackage($package);
+                $this->registerPackage($package, false, $isGlobalRepo);
             // Backward compatibility
             } elseif ('composer-installer' === $package->getType()) {
-                $this->registerPackage($package);
+                $this->registerPackage($package, false, $isGlobalRepo);
             }
         }
     }
@@ -401,7 +409,7 @@ class PluginManager
         );
 
         foreach ($requires as $requireLink) {
-            foreach ($installedRepo->findPackagesWithReplacersAndProviders($requireLink->getTarget(), $requireLink->getConstraint()) as $requiredPackage) {
+            foreach ($installedRepo->findPackagesWithReplacersAndProviders($requireLink->getTarget()) as $requiredPackage) {
                 if (!isset($collected[$requiredPackage->getName()])) {
                     $collected[$requiredPackage->getName()] = $requiredPackage;
                     $collected = $this->collectDependencies($installedRepo, $collected, $requiredPackage);
